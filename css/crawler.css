@@ -1,0 +1,80 @@
+label span{
+    width: 180px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    display: inline-block;
+}
+
+.mapper-localize-area{
+    right: 0;
+    position: absolute;
+    color: white;
+    height: 100%;
+}
+.mapper-localize-area-gird{
+    height: auto;
+    bottom: 0;
+    position: absolute;
+    top: 30px;
+    right: 0;
+    left: 0;
+    overflow-y: scroll;
+    overflow-x: hidden;
+}
+
+.mapper-localize-active{
+    background: #ffff00;
+    color: #000000;
+}
+
+.mapper-localize-text-item{
+    padding: 5px;
+}
+.mapper-localize-text-item >*{
+    vertical-align: top;
+}
+.mapper-localize-text-item:hover .remove-link{
+    display: inline-block;
+}
+.mapper-localize-text-item:hover{
+    background: #cdcdcd;
+}
+.remove-link{
+    width: 15px;
+    height: 15px;
+    border-radius: 8px;
+    position: relative;
+    display: none;
+    margin-left: 5px;
+    font-weight: bold;
+    text-shadow: 1px 1px 2px #ffffff,0 0 1em #fff,0 0 1em #fff;
+    color: #ec0000;
+}
+.text-value-edit{
+    width: 175px;
+}
+
+.mapper-localize-text-item.inactive{
+    display: none;
+}
+.hidden{
+    display: none;
+}
+
+.mapper-localize-area-toolbar{
+    background:rgb(100, 126, 122);
+    padding: 5px;
+    position: relative;
+    z-index: 1;
+}
+.mapper-localize-area-toolbar a{
+    padding: 3px 5px;
+    background: #eee;
+    margin: 2px;
+    color: black;
+    border-radius: 3px;
+}
+.mapper-localize-area-toolbar a:hover{
+    background: #fff;
+}
