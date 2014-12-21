@@ -8,9 +8,12 @@ label span{
 
 .mapper-localize-area{
     right: 0;
+    top: 0;
     position: absolute;
-    color: white;
+    color: #000;
     height: 100%;
+    background: #fff;
+    z-index: 999999;
 }
 .mapper-localize-area-gird{
     height: auto;
@@ -40,6 +43,10 @@ label span{
 .mapper-localize-text-item:hover{
     background: #cdcdcd;
 }
+.mapper-localize-text-item.invalid input{
+    border: 1px solid red;
+}
+
 .remove-link{
     width: 15px;
     height: 15px;
@@ -74,6 +81,8 @@ label span{
     margin: 2px;
     color: black;
     border-radius: 3px;
+    text-decoration: none !important;
+    cursor: pointer;
 }
 .mapper-localize-area-toolbar a:hover{
     background: #fff;

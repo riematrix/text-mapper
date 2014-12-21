@@ -1,13 +1,13 @@
 {
-    "name": "Crawler",
+    "name": "Text Mapper",
     "version": "0.0.0.1",
     "manifest_version": 2,
     "minimum_chrome_version": "26",
-    "description": "A minimal extension web page data collector for Chrome.",
+    "description": "A minimal extension text mapper tool for Chrome.",
 
     "background": {
         "scripts": ["background.js"],
-        "persistent": true
+        "persistent": false
     },
     "permissions": [
         "contextMenus",
