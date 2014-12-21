@@ -3,253 +3,6 @@
  */
 
 /**
- * text item editor
- * display as row of localize editor
- *
- * @param data
- * @constructor
- */
-function TextItem(data) {
-    this.text = data.text;
-    this.alias = data.alias || this.text;
-    this.key = data.key || "";
-    this.path = data.path;
-    this.createByHand = data.createByHand;
-
-    var dom = data.dom;
-    if (!dom && this.path) {
-        try {
-            dom = Xpath.getFrameElements(document, this.path)[0]
-        } catch (e) {
-        }
-    }
-    this.textDom = dom;
-
-    this.init(document);
-
-    if (!this.textDom) {
-        console.warn("can not retrieve dom for path ", this.path, " with original text " + this.text);
-        if (!this.createByHand) {
-            this.inactive()
-        }
-    } else {
-        if (this.text != this.textDom.innerText) {
-            console.warn("current dom text " + this.textDom.innerText + " from path " + this.path + " doesn't match original text " + this.text);
-            this.inactive()
-        } else {
-            this.active()
-        }
-    }
-
-    this._update = [];
-    this._remove = [];
-    this._inactive = [];
-    this._active = [];
-    this._focus = [];
-}
-TextItem.prototype = {
-    init: function(doc) {
-        var row = doc.createElement("p");
-        var label = doc.createElement("label"),
-            span = doc.createElement("span"),
-            textInput = doc.createElement("input"),
-            keyInput = doc.createElement("input"),
-            removeLink = doc.createElement("a");
-
-        textInput.className = "text-value-edit hidden";
-        label.title = span.innerText = this.alias;
-        label.appendChild(span);
-        label.appendChild(textInput);
-
-        row.appendChild(label);
-        row.appendChild(keyInput);
-        row.appendChild(removeLink);
-        row.className = "mapper-localize-text-item";
-        this.dom = row;
-
-        var self = this;
-        keyInput.value = self.key;
-        keyInput.onkeyup = function(e) {
-            if (e.keyCode == 13) {
-                self.update("key change");
-                return
-            }
-            self.key = this.value
-        };
-        keyInput.onblur = function(e) {
-            self.key = this.value;
-            self.update("key blur")
-        };
-        this.keyInput = keyInput;
-
-        span.onclick = function(e) {
-            addClass(this, "hidden");
-            removeClass(textInput, "hidden");
-            textInput.value = this.innerText
-        };
-
-        textInput.onblur = function(e) {
-            addClass(this, "hidden");
-            removeClass(span, "hidden");
-            label.title = span.innerText = self.alias = this.value;
-            self.update()
-        };
-        textInput.onkeyup = function(e) {
-            if (e.keyCode == 13) {
-                this.blur()
-            }
-        };
-
-        removeLink.innerText = "x";
-        removeLink.className = "remove-link";
-        removeLink.onclick = function() {
-            self.remove();
-        }
-    },
-    renderText: function() {
-    },
-    linkDataList: function(id) {
-        this.keyInput.setAttribute("list", id)
-    },
-    inactive: function() {
-        this.activeStatus = false;
-        addClass(this.dom, "inactive");
-        return this
-    },
-    oninactive: function(fn) {
-        this._inactive.push(fn)
-    },
-    active: function() {
-        this.activeStatus = true;
-        removeClass(this.dom, "inactive");
-        return this;
-    },
-    onactive: function(fn) {
-        this._active.push(fn);
-    },
-    focus: function() {
-        this.keyInput.focus();
-        this.applyHandlers(this._focus, [this]);
-    },
-    onfocus: function(fn) {
-        this._focus.push(fn);
-    },
-    linkage: function(nodes, drill) {
-        var dom = this.dom, targets = dom._linkageTargets || [], node;
-        dom._linkageTargets = targets;
-        for (var i = 0; i < nodes.length; i++) {
-            node = typeof drill === "function" ? drill(nodes[i]) : nodes[i];
-            node._linkageTargets = [dom];
-            node.addEventListener("mouseover", linkageMouseOverListener);
-            node.addEventListener("mouseout", linkageMouseOutListener);
-            targets.push(node)
-        }
-        dom.addEventListener("mouseover", linkageMouseOverListener);
-        dom.addEventListener("mouseout", linkageMouseOutListener);
-        return this;
-    },
-    unlinkage: function() {
-        var dom = this.dom, node, nodes = dom._linkageTargets;
-        if (nodes) {
-            for (var c = 0; c < nodes.length; c++) {
-                node = nodes[c];
-                removeClass(node, "mapper-localize-active");
-                node.removeEventListener("mouseover", linkageMouseOverListener);
-                node.removeEventListener("mouseout", linkageMouseOutListener);
-                node._linkageTargets = []
-            }
-        }
-        dom.removeEventListener("mouseover", linkageMouseOverListener);
-        dom.removeEventListener("mouseout", linkageMouseOutListener);
-        dom._linkageTargets = []
-    },
-    remove: function() {
-        this.unlinkage();
-        this.dom.parentElement.removeChild(this.dom);
-        this.applyHandlers(this._remove, [this])
-    },
-    update: function(ev) {
-        this.applyHandlers(this._update, [this,ev])
-    },
-    onupdate: function(fn) {
-        this._update.push(fn)
-    },
-    onremove: function(fn) {
-        this._remove.push(fn)
-    },
-    applyHandlers: function(fns, args) {
-        var c = fns.length;
-        while (c--) {
-            fns[c].apply(null, args)
-        }
-    },
-    serialise: function() {
-        return {
-            text: this.text,
-            path: this.path,
-            key: this.key,
-            alias: this.alias,
-            createByHand: this.createByHand
-        }
-    },
-    invalid: function(){
-        console.log("aaaaaaaaa")
-        addClass(this.dom,"invalid");
-    },
-    valid: function(){
-        console.log("aaaaaaaaasssssssss")
-        removeClass(this.dom,"invalid");
-    }
-};
-
-/**
- * auto complete data list
- * @param data
- * @param drill
- * @constructor
- */
-function DataList(data, drill) {
-    this.data = {};
-    var datalist = document.createElement("datalist");
-    this.dom = datalist;
-    this.id = datalist.id = "datalist_" + new Date().getTime();
-    if (data) {
-        this.addOptions(data, drill)
-    }
-}
-DataList.prototype = {
-    addOption: function(option) {
-        if (!this.hasOption(option)) {
-            var optionDom = document.createElement("option");
-            optionDom.value = option;
-            this.data[option] = optionDom;
-            this.dom.appendChild(optionDom);
-            return true;
-        }
-        return false;
-    },
-    addOptions: function(options, drill) {
-        var l = options.length, needDrill = typeof drill === "function";
-        for (var d = 0; d < l; d++) {
-            var option = options[d];
-            option = needDrill ? drill(option) : option;
-            this.addOption(option);
-        }
-    },
-    removeOption: function(option) {
-        if (this.hasOption(option)) {
-            var optionDom = this.data[option];
-            this.dom.removeChild(optionDom);
-            delete this.data[option]
-        }
-    },
-    hasOption: function(option) {
-        var exist = this.data[option];
-        return typeof exist !== "undefined"
-    }
-};
-
-/**
  * main editor controller
  * @param parent
  * @param textDictionary
@@ -475,16 +228,24 @@ LocalizeEditor.prototype = {
         b.add(d.serialise());
         this.updateCounter()
     },
-    updateTextItem: function(textItem,ev) {
+    updateTextItem: function(textItem, ev) {
         var textDictionary = this.textDictionary,
             dataList = this.recommendDataList;
         var key = textItem.key;
-        var added = dataList.addOption(key);
+        dataList.addOption(key);
+        var keyTextMap = textDictionary.keyTextMap,
+            text = keyTextMap[key],
+            prevItem = this.textItems[text];
         // unique key check
-        if((ev === "key change" || ev === "key blur") && key && !added)
+        if(text && text != textItem.text)
         {
+            prevItem.invalid();
             textItem.invalid();
-        }else{
+        }
+        /*if((ev === "key change" || ev === "key blur") && key){
+            textItem.invalid();
+        }*/
+        else{
             textItem.valid();
             textDictionary.update(textItem.serialise())
         }
@@ -492,8 +253,8 @@ LocalizeEditor.prototype = {
     removeTextItem: function(textItem) {
         var textDictionary = this.textDictionary,
             dataList = this.recommendDataList;
-        dataList.removeOption(textItem.key);
-        textDictionary.remove(textItem.text);
+        dataList.removeOption(textItem.key);// necessary?
+        textDictionary.remove(textItem.text, textItem);
         this.textItems[textItem.text] = null;
         this.updateCounter()
     },
@@ -524,6 +285,7 @@ var textDictionary = top.textDictionary || {
     textDictionaryPath: "text_dictionary_path.json",
     serializedDataLoaded: false,
     data: {},
+    keyTextMap: {},
     total: 0,
     fs: new Filesystem(PERSISTENT, 2 * 1024 * 1024),
     init: function() {
@@ -541,8 +303,10 @@ var textDictionary = top.textDictionary || {
                     return;
                 }
                 for (var c = 0; c < dataArray.length; c++) {
-                    text = dataArray[c].text;
-                    self.data[text] = dataArray[c]
+                    var item = dataArray[c];
+                    text = item.text;
+                    self.data[text] = item;
+                    if(item.key) self.keyTextMap[item.key] = text;
                 }
                 self.serializedDataLoaded = true;
                 deferred.resolve(dataArray)
@@ -559,25 +323,30 @@ var textDictionary = top.textDictionary || {
         var textId = item.text;
         if (!this.data[textId]) {
             this.data[textId] = item;
+            if(item.key) this.keyTextMap[item.key] = textId;
             this.save()
         } else {
             //console.warn("text item key conflicts: " + textId)
         }
     },
-    remove: function(textId) {
-        this.data[textId] = null;
+    remove: function(textId,item) {
+        delete this.data[textId];
+        delete this.keyTextMap[item.key];
         this.save()
     },
     update: function(textItem) {
         var textId = textItem.text;
         if (this.data[textId]) {
             this.data[textId] = textItem;
+            if(textItem.key) this.keyTextMap[textItem.key] = textId;
             this.save()
         } else {
             console.warn("text item does not exist: " + textId)
         }
     },
     removeAll: function() {
+        this.data = {};
+        this.keyTextMap = {};
         this.fs.createFile(this.textDictionaryPath, "[]")
     },
     save: function() {

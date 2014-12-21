@@ -27,6 +27,8 @@
             "lib/utils.js",
             "lib/xpath.js",
             "lib/filesystem.js",
+            "js/datalist.js",
+            "js/textitem.js",
             "js/crawler.js"
         ],
         "all_frames":true
