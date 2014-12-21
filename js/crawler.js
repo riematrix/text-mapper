@@ -1,36 +1,6 @@
 /**
  * Created by Stanley Zhou on 2014/9/5.
  */
-/*chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
- console.log(request)
- switch (request.method) {
- case 'collect_persistent_info':
- console.log("collect");
- sendResponse({status: ""});
- break;
- default:
- sendResponse({});
- break;
- }
- });*/
-
-/*var rightClicke dElement;
- (function init(){
- document.addEventListener("mousedown",function(e){
- if(e.button === 2){
- rightClickedElement = e.target;
- }
- })
- })();
-
- function collectPersistentInfo(info){
- var path = Xpath.getElementXPath(rightClickedElement);
- console.log(rightClickedElement.innerText,path);
- }
-
- function collectTemporaryInfo(info){
- console.log(info);
- }*/
 
 /**
  * text item editor
@@ -99,16 +69,16 @@ TextItem.prototype = {
 
         var self = this;
         keyInput.value = self.key;
-        keyInput.onkeyup = function(i) {
-            if (i.keyCode == 13) {
-                self.update();
+        keyInput.onkeyup = function(e) {
+            if (e.keyCode == 13) {
+                self.update("key change");
                 return
             }
             self.key = this.value
         };
         keyInput.onblur = function(e) {
             self.key = this.value;
-            self.update()
+            self.update("key blur")
         };
         this.keyInput = keyInput;
 
@@ -198,8 +168,8 @@ TextItem.prototype = {
         this.dom.parentElement.removeChild(this.dom);
         this.applyHandlers(this._remove, [this])
     },
-    update: function() {
-        this.applyHandlers(this._update, [this])
+    update: function(ev) {
+        this.applyHandlers(this._update, [this,ev])
     },
     onupdate: function(fn) {
         this._update.push(fn)
@@ -223,9 +193,11 @@ TextItem.prototype = {
         }
     },
     invalid: function(){
+        console.log("aaaaaaaaa")
         addClass(this.dom,"invalid");
     },
     valid: function(){
+        console.log("aaaaaaaaasssssssss")
         removeClass(this.dom,"invalid");
     }
 };
@@ -477,8 +449,8 @@ LocalizeEditor.prototype = {
             datalist.addOption(textItem.key);
 
             var self = this;
-            textItem.onupdate(function(item) {
-                self.updateTextItem(item)
+            textItem.onupdate(function(item,ev) {
+                self.updateTextItem(item,ev)
             });
             textItem.onremove(function(f) {
                 self.removeTextItem(f)
@@ -503,12 +475,19 @@ LocalizeEditor.prototype = {
         b.add(d.serialise());
         this.updateCounter()
     },
-    updateTextItem: function(textItem) {
+    updateTextItem: function(textItem,ev) {
         var textDictionary = this.textDictionary,
             dataList = this.recommendDataList;
-        dataList.addOption(textItem.key);
-        //TODO check in key set
-        textDictionary.update(textItem.serialise())
+        var key = textItem.key;
+        var added = dataList.addOption(key);
+        // unique key check
+        if((ev === "key change" || ev === "key blur") && key && !added)
+        {
+            textItem.invalid();
+        }else{
+            textItem.valid();
+            textDictionary.update(textItem.serialise())
+        }
     },
     removeTextItem: function(textItem) {
         var textDictionary = this.textDictionary,
