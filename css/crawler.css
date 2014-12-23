@@ -14,12 +14,13 @@ label span{
     height: 100%;
     background: #fff;
     z-index: 999999;
+	box-shadow: -2px 1px 10px #888888;
 }
 .mapper-localize-area-gird{
     height: auto;
     bottom: 0;
     position: absolute;
-    top: 30px;
+    top: 40px;
     right: 0;
     left: 0;
     overflow-y: scroll;
@@ -74,6 +75,7 @@ label span{
     padding: 5px;
     position: relative;
     z-index: 1;
+	padding: 10px 5px;
 }
 .mapper-localize-area-toolbar a{
     padding: 3px 5px;

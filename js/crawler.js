@@ -172,8 +172,9 @@ LocalizeEditor.prototype = {
     },
     initTextItems: function(textCollection) {
         this.eachTextItem(function(index, item) {
+            item.inactive().unlinkage()
             if (item.createByHand) {
-                item.inactive().unlinkage()
+				item.active();
             }
         });
         var active = 0, textItems = this.textItems;
