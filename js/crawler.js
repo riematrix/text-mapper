@@ -78,7 +78,7 @@ LocalizeEditor.prototype = {
         });
 
         this.createLink.onclick = function() {
-            self.createTextItem({text: "New_Text_" + new Date().getTime(),createByHand: true})
+            self.createTextItem({text: "New_Text_" + new Date().getTime(),createByHand: true, hash: location.hash})
         };
 
         this.exportLink.onclick = function() {
@@ -152,6 +152,7 @@ LocalizeEditor.prototype = {
             targetWidth -= width;
             removeClass(dom,"hidden");
         }
+		
         this.expanded = !this.expanded;
         localStorage.setItem("localize_area_expanded", this.expanded);
         this.currentWidth = currentWidth;
@@ -173,7 +174,7 @@ LocalizeEditor.prototype = {
     initTextItems: function(textCollection) {
         this.eachTextItem(function(index, item) {
             item.inactive().unlinkage()
-            if (item.createByHand) {
+            if (item.createByHand && location.hash == item.hash) {
 				item.active();
             }
         });
@@ -402,7 +403,7 @@ function collectTargetListener(ev) {
         } else {
             if (text != "") {
                 var textNodes = textNodeCollection.current[text];
-                localizeArea.createTextItem({dom: el,path: path,text: text}
+                localizeArea.createTextItem({dom: el,path: path,text: text, hash: location.hash}
                     , textNodes)
             }
         }
@@ -470,7 +471,7 @@ var localizeArea = top.localizeArea || null;
     document.addEventListener("click", collectTargetListener);
     document.addEventListener("keydown", function(e) {
         if (e.keyCode === 73 && e.ctrlKey) {
-            localizeArea.toggle()
+            localizeArea.toggle();
         }
     })
 })();

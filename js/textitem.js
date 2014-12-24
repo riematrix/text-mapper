@@ -15,6 +15,7 @@ function TextItem(data) {
     this.key = data.key || "";
     this.path = data.path;
     this.createByHand = data.createByHand;
+	this.hash = typeof data.hash !== "undefined" ? data.hash : location.hash;
 
     var dom = data.dom;
     if (!dom && this.path) {
@@ -29,7 +30,7 @@ function TextItem(data) {
 
     if (!this.textDom) {
         console.warn("can not retrieve dom for path ", this.path, " with original text " + this.text);
-        if (!this.createByHand) {
+        if (!this.createByHand || location.hash != this.hash) {
             this.inactive()
         }
     } else {
@@ -189,7 +190,8 @@ TextItem.prototype = {
             path: this.path,
             key: this.key,
             alias: this.alias,
-            createByHand: this.createByHand
+            createByHand: this.createByHand,
+			hash: this.hash
         }
     },
     invalid: function(){
