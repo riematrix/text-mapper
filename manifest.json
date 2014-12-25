@@ -29,6 +29,8 @@
             "lib/filesystem.js",
             "js/datalist.js",
             "js/textitem.js",
+            "js/editor.js",
+            "js/locator.js",
             "js/crawler.js"
         ],
         "all_frames":true
