@@ -2,26 +2,20 @@
  * Created by Stanley Zhou on 2014/9/5.
  */
 
- /**
+/**
  main entry
  */
 
 function checkAllowedDomains(){
-	var allowExecuteDomains = localStorage.getItem("localize_domains");
-	allowExecuteDomains = allowExecuteDomains ? JSON.parse(allowExecuteDomains) : [];
-	for(var i=0;i<allowExecuteDomains.length;i++){
-		var domain = allowExecuteDomains[i];
-		if(location.host === domain){
-			return true;
-		}
-	}
-	return false;
+    var allowExecuteDomains = localStorage.getItem("localize_domains");
+    allowExecuteDomains = allowExecuteDomains ? JSON.parse(allowExecuteDomains) : [];
+    return !!allowExecuteDomains[location.host];
 }
 
-if(!checkAllowedDomains){
-	throw new Error("domain " + location.host + "is not allowed to execute, script will exit");
+if(!checkAllowedDomains()){
+    throw new Error("domain " + location.host + " is not allowed to execute, script will exit");
 }
- 
+
 var textDictionary = top.textDictionary || {
     textDictionaryPath: "text_dictionary_path.json",
     serializedDataLoaded: false,
@@ -212,7 +206,7 @@ var localizeArea = top.localizeArea || null;
         if (e.keyCode === 73 && e.ctrlKey) { // Ctrl + i
             localizeArea.toggle();
         }
-		else if (e.keyCode === 27) { // ESC 
+        else if (e.keyCode === 27) { // ESC
             locator.hide();
         }
     })
@@ -221,3 +215,20 @@ var localizeArea = top.localizeArea || null;
 
 var locator = top.locator || new Locator();
 locator.show();
+
+function addToWatch(){
+    var allowExecuteDomains = localStorage.getItem("localize_domains");
+    allowExecuteDomains = allowExecuteDomains ? JSON.parse(allowExecuteDomains) : {};
+    var domain = window.location.host;
+    if(!allowExecuteDomains[domain]){
+        allowExecuteDomains[domain] = true;
+    }
+    localStorage.setItem("localize_domains",JSON.stringify(allowExecuteDomains));
+}
+
+function removeFromWatch(){
+    var allowExecuteDomains = localStorage.getItem("localize_domains");
+    allowExecuteDomains = allowExecuteDomains ? JSON.parse(allowExecuteDomains) : {};
+    delete allowExecuteDomains[window.location.host];
+    localStorage.setItem("localize_domains",JSON.stringify(allowExecuteDomains));
+}
