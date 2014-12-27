@@ -3,9 +3,9 @@
  */
 document.addEventListener("DOMContentLoaded",function(){
     document.getElementById("watch_it").addEventListener("click",function(){
-        chrome.tabs.executeScript(null, {code: "addToWatch();",allFrames: false});
+        chrome.tabs.executeScript(null, {code: "watcher.approve();",allFrames: false});
     });
     document.getElementById("un_watch_it").addEventListener("click",function(){
-        chrome.tabs.executeScript(null, {code: "removeFromWatch();",allFrames: false});
+        chrome.tabs.executeScript(null, {code: "watcher.reject();",allFrames: false});
     });
 });

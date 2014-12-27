@@ -6,13 +6,8 @@
  main entry
  */
 
-function checkAllowedDomains(){
-    var allowExecuteDomains = localStorage.getItem("localize_domains");
-    allowExecuteDomains = allowExecuteDomains ? JSON.parse(allowExecuteDomains) : [];
-    return !!allowExecuteDomains[location.host];
-}
-
-if(!checkAllowedDomains()){
+var watcher = new DomainMonitor();
+if(!watcher.check(location.host)){
     throw new Error("domain " + location.host + " is not allowed to execute, script will exit");
 }
 
@@ -215,20 +210,3 @@ var localizeArea = top.localizeArea || null;
 
 var locator = top.locator || new Locator();
 locator.show();
-
-function addToWatch(){
-    var allowExecuteDomains = localStorage.getItem("localize_domains");
-    allowExecuteDomains = allowExecuteDomains ? JSON.parse(allowExecuteDomains) : {};
-    var domain = window.location.host;
-    if(!allowExecuteDomains[domain]){
-        allowExecuteDomains[domain] = true;
-    }
-    localStorage.setItem("localize_domains",JSON.stringify(allowExecuteDomains));
-}
-
-function removeFromWatch(){
-    var allowExecuteDomains = localStorage.getItem("localize_domains");
-    allowExecuteDomains = allowExecuteDomains ? JSON.parse(allowExecuteDomains) : {};
-    delete allowExecuteDomains[window.location.host];
-    localStorage.setItem("localize_domains",JSON.stringify(allowExecuteDomains));
-}

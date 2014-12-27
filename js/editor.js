@@ -33,6 +33,11 @@ function LocalizeEditor(parent, textDictionary) {
     toolbar.appendChild(exportLink);
     this.exportLink = exportLink;
 
+    var discover = document.createElement("a");
+    discover.innerText = "Discover";
+    toolbar.appendChild(discover);
+    this.discoverLink = discover;
+
     var dumpLink = document.createElement("a");
     dumpLink.innerText = "Dump";
     toolbar.appendChild(dumpLink);
@@ -87,6 +92,10 @@ LocalizeEditor.prototype = {
 
         this.clearLink.onclick = function() {
             dictionary.removeAll()
+        };
+
+        this.discoverLink.onclick = function() {
+
         };
 
         var fileupload = document.createElement("input");
@@ -173,7 +182,7 @@ LocalizeEditor.prototype = {
     },
     initTextItems: function(textCollection) {
         this.eachTextItem(function(index, item) {
-            item.inactive().unlinkage()
+            item.inactive().unlinkage();
             if (item.createByHand && location.hash == item.hash) {
 				item.active();
             }
