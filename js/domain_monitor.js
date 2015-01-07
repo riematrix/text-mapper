@@ -16,6 +16,7 @@ DomainMonitor.prototype = {
         localStorage.setItem(this.localEntry,JSON.stringify(domains));
     },
     approve: function(host){
+        host = host || location.host;
         var allowExecuteDomains = this.query();
         if(!allowExecuteDomains[host]){
                 allowExecuteDomains[host] = true;

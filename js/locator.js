@@ -1,6 +1,7 @@
-function Locator(){
+function Locator(container){
+    container = container || document.body;
     this.dom = document.createElement("div");
-    document.body.appendChild(this.dom);
+    container.appendChild(this.dom);
     this.init();
 }
 Locator.prototype = {

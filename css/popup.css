@@ -1,0 +1,92 @@
+@-webkit-keyframes rotating {
+    from{
+        -webkit-transform: rotateY(0deg);
+    }
+    to{
+        -webkit-transform: rotateY(360deg);
+    }
+}
+
+body{
+    width: 200px;
+    height: 36px;
+    background-color: #d5d5d5;
+    padding: 0;
+    margin: 0;
+}
+div.operator{
+    font-size: 14px;
+    font-family: arial;
+    font-weight: bold;
+    background: #DDE4E3 no-repeat ;
+    border-radius: 3px;
+    margin: 4px 3px;
+    padding: 5px;
+    -webkit-transition: all 0.3s ease-in-out;
+}
+div.operator:hover{
+    cursor: pointer;
+    background-color: #F9FEFF;
+    /*box-shadow: #999 1px 2px 3px;*/
+}
+.operator .operator-target{
+    background: no-repeat ;
+    padding-left: 33px;
+    line-height: 28px;
+    height: 28px;
+    display: inline-block;
+    margin: 0 auto;
+    position: relative;
+    overflow: hidden;
+    opacity: 0.8;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    width: 120px;
+}
+.operator .operator-target:before
+{
+    content: "";
+    position: absolute;
+    width: 28px;
+    height: 28px;
+    left: 0;
+    background-size: 22px 22px;
+    background-repeat: no-repeat;
+    background-position: center center;
+    -webkit-transition: all 0.3s ease-in-out;
+    opacity: 1;
+}
+.operator:hover > span
+{
+    opacity: 1;
+}
+.operator:hover .operator-target:before
+{
+    /*-webkit-animation: rotating 3s linear infinite;*/
+    background-size: 28px 28px;
+    opacity: 1;
+}
+.operator:hover .operator-operation{
+    background: #666666;
+}
+.operator-operation{
+    width: 18px;
+    height: 18px;
+    display: inline-block;
+    position: fixed;
+    border-radius: 15px;
+    background-color: #DDE4E3;
+    opacity: 0.3;
+    text-align: center;
+    margin-left: 10px;
+    margin-top: 6px;
+    -webkit-transition: all 0.4s ease-in-out;
+}
+.operator-operation:hover{
+    width: 60px;
+    height: 28px;
+    opacity: 1;
+    margin-left: -32px;
+    margin-top: 1px;
+    -webkit-transition: all 0.4s ease-in-out;
+}

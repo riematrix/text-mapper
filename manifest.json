@@ -17,7 +17,7 @@
     ],
     "browser_action": {
         "default_icon": "images/icon.png",
-        "default_title": "Crawler",
+        "default_title": "Text Mapper",
         "default_popup": "popup.html"
     },
     "content_scripts":[{

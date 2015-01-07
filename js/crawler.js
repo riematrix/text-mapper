@@ -209,4 +209,4 @@ var localizeArea = top.localizeArea || null;
 
 
 var locator = top.locator || new Locator();
-locator.show();
+//locator.show();

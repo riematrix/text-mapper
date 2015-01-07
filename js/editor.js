@@ -33,10 +33,10 @@ function LocalizeEditor(parent, textDictionary) {
     toolbar.appendChild(exportLink);
     this.exportLink = exportLink;
 
-    var discover = document.createElement("a");
+    /*var discover = document.createElement("a");
     discover.innerText = "Discover";
     toolbar.appendChild(discover);
-    this.discoverLink = discover;
+    this.discoverLink = discover;*/
 
     var dumpLink = document.createElement("a");
     dumpLink.innerText = "Dump";
@@ -94,9 +94,9 @@ LocalizeEditor.prototype = {
             dictionary.removeAll()
         };
 
-        this.discoverLink.onclick = function() {
+        /*this.discoverLink.onclick = function() {
 
-        };
+        };*/
 
         var fileupload = document.createElement("input");
         fileupload.type = "file";
