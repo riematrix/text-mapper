@@ -1,7 +1,7 @@
 /**
  * Created by Stanley Zhou on 2014/12/24.
  */
- 
+
 /**
  * main editor controller
  * @param parent
@@ -15,46 +15,16 @@ function LocalizeEditor(parent, textDictionary) {
     var container = document.createElement("div");
     container.className = "mapper-localize-area hidden";
 
-    var toolbar = document.createElement("div");
-    toolbar.className = "mapper-localize-area-toolbar";
-
-    var create = document.createElement("a");
-    create.innerText = "Create";
-    toolbar.appendChild(create);
-    this.createLink = create;
-
-    var clear = document.createElement("a");
-    clear.innerText = "Clear All";
-    toolbar.appendChild(clear);
-    this.clearLink = clear;
-
-    var exportLink = document.createElement("a");
-    exportLink.innerText = "Export";
-    toolbar.appendChild(exportLink);
-    this.exportLink = exportLink;
-
-    /*var discover = document.createElement("a");
-    discover.innerText = "Discover";
-    toolbar.appendChild(discover);
-    this.discoverLink = discover;*/
-
-    var dumpLink = document.createElement("a");
-    dumpLink.innerText = "Dump";
-    toolbar.appendChild(dumpLink);
-    this.dumpLink = dumpLink;
-
-    var revertLink = document.createElement("a");
-    revertLink.innerText = "Revert";
-    toolbar.appendChild(revertLink);
-    this.revertLink = revertLink;
+    var toolbar = new ToolBar();
+    this.toolbar = toolbar;
 
     var counter = document.createElement("span");
     counter.style["float"] = "right";
     counter.style["color"] = "#ffffff";
-    toolbar.appendChild(counter);
+    toolbar.dom.appendChild(counter);
     this.counter = counter;
 
-    container.appendChild(toolbar);
+    container.appendChild(toolbar.dom);
     var dataGrid = document.createElement("div");
     dataGrid.className = "mapper-localize-area-gird";
     this.editorGrid = dataGrid;
@@ -73,65 +43,93 @@ LocalizeEditor.prototype = {
     contentWidth: undefined,
     expanded: localStorage.getItem("localize_area_expanded") === "true",
     init: function(textCollection) {
+        this.textCollection = textCollection;
         var self = this;
         var dictionary = this.textDictionary;
-        dictionary.init().done(function(data) {
-            for (var d = 0; d < data.length; d++) {
-                self.appendTextItem(data[d])
-            }
-            self.initTextItems(textCollection);
+        dictionary.init().done(function(dataList) {
+            self.reloadTextItemsData(dataList);
         });
 
-        this.createLink.onclick = function() {
-            self.createTextItem({text: "New_Text_" + new Date().getTime(),createByHand: true, hash: location.hash})
-        };
-
-        this.exportLink.onclick = function() {
-            exportCsvData("result.csv", dictionary.toCsv())
-        };
-
-        this.clearLink.onclick = function() {
-            dictionary.removeAll()
-        };
-
-        /*this.discoverLink.onclick = function() {
-
-        };*/
-
-        var fileupload = document.createElement("input");
-        fileupload.type = "file";
-        fileupload.style.display = "none";
-        fileupload.onchange = function(e){
-            var f = e.target.files[0];
-            if (f) {
-                var r = new FileReader();
-                r.onload = function(e) {
-                    console.log(e.target.result);
-                    fileupload.style.display = "none";
-                    dictionary.revert(e.target.result);
+        var revertFileUpload = document.createElement("input");
+        revertFileUpload.type = "file";
+        revertFileUpload.style.display = "none";
+        revertFileUpload.onchange = function(e){
+            var file = e.target.files[0];
+            if (file) {
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    var data = e.target.result;
+                    console.log("reverted on " + new Date(),data);
+                    revertFileUpload.style.display = "none";
+                    dictionary.revert(data);
+                    self.removeAllTextItem().reloadTextItemsData(JSON.parse(data));
                 };
-                r.readAsText(f);
+                reader.readAsText(file);
             }
         };
-        this.revertLink.appendChild(fileupload);
-        this.revertLink.onclick = function(){
-            var display = fileupload.style.display;
-            fileupload.style.display = display === "none" ? "" : "none";
-        };
-        this.revertLink.onblur = function(){
-            fileupload.style.display = "none";
-        };
-
-        this.dumpLink.onclick = function(){
-            var filename = "data.jte",
-                data = dictionary.serialise();
-            exportTextData(filename, data);
-        };
+        self.toolbar.appendButtons([
+            {text: "Create",event: "click",handler: function(){
+                self.createTextItem({
+                    text: "New_Text_" + new Date().getTime(),
+                    createByHand: true,
+                    hash: location.hash
+                });
+            }},
+            {text: "Clear All",event: "click",handler: function(){
+                self.removeAllTextItem();
+                dictionary.removeAll();
+            }},
+            {text: "Scan",event: "click",handler: function(){
+                self.textCollection.each(function(text, nodes) {
+                    self.createTextItem({
+                            dom: nodes[0].dom,
+                            //path: Xpath.getElementXPath(nodes[0].dom),
+                            text: text,
+                            hash: location.hash
+                        }
+                        , nodes);
+                });
+            }},
+            {text: "Export",event: "click",handler: function(){
+                exportCsvData("result.csv", dictionary.toCsv());
+            }},
+            {text: "Dump",event: "click",handler: function(){
+                var filename = "data.jte",
+                    data = dictionary.serialise();
+                exportTextData(filename, data);
+            }},
+            {text: "Revert",event: "click",
+                handler: function(){
+                    var display = revertFileUpload.style.display;
+                    revertFileUpload.style.display = display === "none" ? "" : "none";
+                },
+                init: function(button, dom){
+                    dom.appendChild(revertFileUpload);
+                    dom.onblur = function(){
+                        revertFileUpload.style.display = "none";
+                    };
+                }
+            },
+            {text: "Sync",event: "click",
+                handler: function(){
+                    dictionary.removeAll().synchronize(function(dataList){
+                        self.removeAllTextItem();
+                        self.reloadTextItemsData(dataList);
+                    });
+                }
+            }
+        ]);
 
         if (this.expanded) {
             this.currentWidth = this.width
         }
         return this;
+    },
+    reloadTextItemsData: function(dataList){
+        for (var i = 0; i < dataList.length; i++) {
+            this.appendTextItem(dataList[i]);
+        }
+        this.initTextItems();
     },
     render: function() {
         var dom = this.dom,
@@ -161,7 +159,7 @@ LocalizeEditor.prototype = {
             targetWidth -= width;
             removeClass(dom,"hidden");
         }
-		
+
         this.expanded = !this.expanded;
         localStorage.setItem("localize_area_expanded", this.expanded);
         this.currentWidth = currentWidth;
@@ -180,15 +178,15 @@ LocalizeEditor.prototype = {
         });
         this.counter.innerText = activeCount + "/" + totalCount
     },
-    initTextItems: function(textCollection) {
+    initTextItems: function() {
         this.eachTextItem(function(index, item) {
             item.inactive().unlinkage();
             if (item.createByHand && location.hash == item.hash) {
-				item.active();
+                item.active();
             }
         });
         var active = 0, textItems = this.textItems;
-        textCollection.each(function(text, nodes) {
+        this.textCollection.each(function(text, nodes) {
             var f = textItems[text];
             if (f) {
                 f.active().linkage(nodes, function(g) {
@@ -228,16 +226,16 @@ LocalizeEditor.prototype = {
         return textItem
     },
     createTextItem: function(item, linkageNodes) {
-        var d = this.appendTextItem(item);
+        var textItem = this.appendTextItem(item);
         if (linkageNodes) {
-            d.linkage(linkageNodes, function(e) {
-                return e.dom
+            textItem.linkage(linkageNodes, function(node) {
+                return node.dom
             })
         }
-        d.focus();
-        var b = this.textDictionary;
-        b.add(d.serialise());
-        this.updateCounter()
+        textItem.focus();
+        var textDictionary = this.textDictionary;
+        textDictionary.add(textItem.serialise());
+        this.updateCounter();
     },
     updateTextItem: function(textItem, ev) {
         var textDictionary = this.textDictionary,
@@ -254,8 +252,8 @@ LocalizeEditor.prototype = {
             textItem.invalid();
         }
         /*if((ev === "key change" || ev === "key blur") && key){
-            textItem.invalid();
-        }*/
+         textItem.invalid();
+         }*/
         else{
             textItem.valid();
             textDictionary.update(textItem.serialise())
@@ -269,13 +267,22 @@ LocalizeEditor.prototype = {
         this.textItems[textItem.text] = null;
         this.updateCounter()
     },
+    removeAllTextItem: function() {
+        this.eachTextItem(function(text, item){
+            var dom = item.dom;
+            dom.parentElement.removeChild(dom);
+        });
+        this.textItems = {};
+        this.updateCounter();
+        return this;
+    },
     eachTextItem: function(fn) {
         var textItems = this.textItems;
-        for (var item in textItems) {
-            if (textItems.hasOwnProperty(item)) {
-                var textItem = textItems[item];
+        for (var text in textItems) {
+            if (textItems.hasOwnProperty(text)) {
+                var textItem = textItems[text];
                 if (textItem) {
-                    fn(item, textItem)
+                    fn(text, textItem)
                 }
             }
         }
@@ -290,5 +297,29 @@ LocalizeEditor.prototype = {
             textItemList.push(item);
         });
         return JSON.stringify(textItemList);
+    }
+};
+
+function ToolBar(){
+    var toolbar = document.createElement("div");
+    toolbar.className = "mapper-localize-area-toolbar";
+    this.dom = toolbar;
+
+}
+ToolBar.prototype = {
+    appendButton: function(options){
+        var link = document.createElement("a");
+        link.innerText = options.text;
+        this.dom.appendChild(link);
+        link.addEventListener(options.event, options.handler);
+        var init = options.init;
+        if(typeof init == "function"){
+            init(this, this.dom);
+        }
+    },
+    appendButtons: function(buttons){
+        for(var i=0;i<buttons.length;i++){
+            this.appendButton(buttons[i]);
+        }
     }
 };

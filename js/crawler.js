@@ -13,6 +13,7 @@ if(!watcher.check(location.host)){
 
 var textDictionary = top.textDictionary || {
     textDictionaryPath: "text_dictionary_path.json",
+    textDictionarySyncPath: "http://localhost/data.jte",
     serializedDataLoaded: false,
     data: {},
     keyTextMap: {},
@@ -40,9 +41,9 @@ var textDictionary = top.textDictionary || {
                 }
                 self.serializedDataLoaded = true;
                 deferred.resolve(dataArray)
-            }).fail(function(c) {
-                deferred.reject();
-                if (FileError.NOT_FOUND_ERR == c.code) {
+            }).fail(function(e) {
+                deferred.reject(e);
+                if (FileError.NOT_FOUND_ERR == e.code) {
                     self.removeAll();
                 }
             })
@@ -77,7 +78,8 @@ var textDictionary = top.textDictionary || {
     removeAll: function() {
         this.data = {};
         this.keyTextMap = {};
-        this.fs.createFile(this.textDictionaryPath, "[]")
+        this.fs.createFile(this.textDictionaryPath, "[]");
+        return this;
     },
     save: function() {
         var data = this.serialise();
@@ -110,12 +112,17 @@ var textDictionary = top.textDictionary || {
     },
     revert: function(data){
         this.fs.createFile(this.textDictionaryPath, data);
-        location.href = location.href;// TODO re-inject
     },
-    synchronize: function(url){
+    synchronize: function(fn){
         var self = this;
-        ajax(url,function(data){    //TODO data source admin
-            self.fs.createFile(this.textDictionaryPath, data);
+        ajax({
+            url: self.textDictionarySyncPath,
+            type: "get",
+            success: function(data){
+                console.log("synchronized on " + new Date(), data);
+                self.revert(data);
+                fn(JSON.parse(data));
+            }
         });
     }
 };
@@ -192,7 +199,7 @@ var localizeArea = top.localizeArea || null;
         }
     } else {
         try {
-            localizeArea.initTextItems(top.textNodeCollection)
+            localizeArea.initTextItems()
         } catch (e) {
         }
     }
